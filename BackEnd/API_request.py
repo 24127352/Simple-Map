@@ -1,69 +1,40 @@
 import requests
 import json
 
-# 🔑 Put your real OpenTripMap API key here
-API_KEY = "5ae2e3f221c38a28845f05b644c5bf898d1c02ec9cfe9561514497c5"
+# Example coordinates (District 1, HCMC)
+lat = 10.7769
+lon = 106.7009
+radius = 1000  # meters
 
-# 📍 Set coordinates somewhere with known POIs
-lat = 10.776889      # Example: District 1, HCMC
-lon = 106.700806
-radius = 5000         # meters
-limit = 10            # number of POIs to fetch
-kinds = "Architecture"
+# Overpass QL query
+query = f"""
+[out:json];
+(
+  node["amenity"="cafe"](around:{radius},{lat},{lon});
+  node["tourism"="museum"](around:{radius},{lat},{lon});
+);
+out center;
+"""
 
+url = "https://overpass-api.de/api/interpreter"
 
-# Step 1: Get nearby POIs
-def get_nearby_pois(lat, lon, radius, limit, kinds):
-    url = "https://api.opentripmap.com/0.1/en/places/radius"
-    params = {
-        "lat": lat,
-        "lon": lon,
-        "radius": radius,
-        "limit": limit,
-        "kinds": kinds,
-        "apikey": API_KEY
-    }
-
-    response = requests.get(url, params=params)
-    
-    if response.status_code != 200:
-        print("Error fetching POIs:", response.status_code, response.text)
-        return []
-
+try:
+    response = requests.post(url, data=query)
+    response.raise_for_status()
     data = response.json()
-    return data.get("features", [])
 
-# Step 2: Get detailed info for each POI
-def get_poi_details(xid):
-    url = f"https://api.opentripmap.com/0.1/en/places/xid/{xid}"
-    params = {"apikey": API_KEY}
-    response = requests.get(url, params=params)
-    
-    if response.status_code != 200:
-        print(f"Error fetching details for {xid}: {response.status_code}")
-        return {}
-    
-    return response.json()
+    elements = data.get("elements", [])
 
-# Step 3: Run the process
-pois = get_nearby_pois(lat, lon, radius, limit, kinds)
+    if not elements:
+        print("No POIs found nearby.")
+    else:
+        for el in elements:
+            name = el.get("tags", {}).get("name", "Unnamed POI")
+            poi_type = el.get("tags", {}).get("amenity") or el.get("tags", {}).get("tourism")
+            lat = el.get("lat")
+            lon = el.get("lon")
 
-if not pois:
-    print("No POIs found. Try increasing radius or checking coordinates.")
-else:
-    print(f"Found {len(pois)} POIs:\n")
-    for i, poi in enumerate(pois, start=1):
-        props = poi["properties"]
-        name = props.get("name", "Unnamed")
-        xid = props.get("xid")
-        kind = props.get("kinds", "Unknown")
-        dist = props.get("dist", "?")
-        
-        print(f"{i}. {name} | Category: {kind} | Distance: {dist}m | XID: {xid}")
-        
-        details = get_poi_details(xid)
-        desc = details.get("wikipedia_extracts", {}).get("text", "No description available")
-        photo = details.get("preview", {}).get("source", "No photo available")
-        
-        print(f"   Description: {desc[:100]}...")  # first 100 chars
-        print(f"   Photo URL: {photo}\n")
+            print(f"- {name} ({poi_type}) at ({lat}, {lon})")
+
+except Exception as e:
+    print("Error:", e)
