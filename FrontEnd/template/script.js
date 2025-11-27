@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     const defaultIcon = L.icon({
     });
-    
+
 
     const map = L.map('map').setView([10.7769, 106.7009], 13);
 
@@ -25,6 +25,12 @@ document.addEventListener('DOMContentLoaded', function () {
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
+
+    //Lớp traffic flow TomTom:
+    const trafficFlowLayer = L.tileLayer(
+        "https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=l6e2nZO9QtCFvw3Gi69l2NjlwHiElGpC",
+        { opacity: 0.8 }
+    );
 
     //Data fake:
     const mockLocations = [
@@ -50,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     ];
 
-    const markersLayer =  L.layerGroup().addTo(map);
+    const markersLayer = L.layerGroup().addTo(map);
 
     const detailsPanel = document.getElementById('restaurant-details');
     const placeName = document.getElementById('res-name');
@@ -67,8 +73,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     //HÀM LỌC MARKER
-    function renderMarkers(type){
-        
+    function renderMarkers(type) {
+
         //Xoá trước
         markersLayer.clearLayers();
 
@@ -79,11 +85,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         //Tạo marker sau khi lọc
         taggedLocations.forEach(location => {
-            const marker = L.marker([location.lat, location.lng], {icon:getIconByCategory(location.category)}).addTo(map);
-            
+            const marker = L.marker([location.lat, location.lng], { icon: getIconByCategory(location.category) }).addTo(map);
+
             //Click event
-            marker.on('click', function (){
-                placeName.textContent =  location.name;
+            marker.on('click', function () {
+                placeName.textContent = location.name;
                 placeAddress.textContent = "Địa chỉ: " + location.address;
                 placeDescription.textContent = location.description;
                 detailsPanel.classList.remove('hidden');
@@ -91,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             //Thêm marker vào GROUP markersLayer
             marker.addTo(markersLayer);
-        
+
         });
     }
 
@@ -99,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const tagButtons = document.querySelectorAll('.tag-btn');
 
     tagButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             tagButtons.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
 
@@ -120,6 +126,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const lng = pos.coords.longitude;
             L.marker([lat, lng]).addTo(map).bindPopup('Bạn ở đây').openPopup();
             map.setView([lat, lng], 15);
+
+            trafficFlowLayer.addTo(map);
         });
     }
 });
