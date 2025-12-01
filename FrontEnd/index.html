@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,10 +20,22 @@
 
     <div class = "tag-bar">
         <button class ="tag-btn active" data-type ="all" > Tất cả </button>
-        <button class ="tag-btn" data-type ="restaurant" > Nhà hàng </button>
+        <button class ="tag-btn" data-type ="restaurant" > Nhà hàng/Quán ăn </button>
         <button class ="tag-btn" data-type ="hotel" > Khách sạn </button>
         <button class ="tag-btn" data-type ="cafe" > Cafe </button>
-        <button class ="tag-btn" data-type ="..." > ... </button>
+        
+        <div class="dropdown-container">
+            <button id="more-btn" class="tag-btn more-btn">...</button>
+        
+            <div id="dropdown-menu" class="dropdown-content">
+                <button class="tag-btn dropdown-item" data-type="bar">Bar/Pub</button>
+                <button class="tag-btn dropdown-item" data-type="museum">Bảo tàng</button>
+                <button class="tag-btn dropdown-item" data-type="park">Công viên</button>
+                <button class="tag-btn dropdown-item" data-type="supermarket">Siêu thị</button>
+                <button class="tag-btn dropdown-item" data-type="library">Thư viện</button>
+                <button class="tag-btn dropdown-item" data-type="marketplace">Chợ</button>
+            </div>
+        </div>
     </div>
 
     <button id ="traffic-toggle" class ="traffic-btn active"> Hiển thị mật độ giao thông </button>

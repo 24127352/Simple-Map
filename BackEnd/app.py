@@ -29,9 +29,11 @@ def map_osm_to_app_data(osm_element):
     tags = osm_element.get('tags', {})
     
     # 1. Xác định Category
-    category = 'other'
+    category = 'other' 
     amenity = tags.get('amenity', '')
     tourism = tags.get('tourism', '')
+    shop = tags.get('shop', '') 
+    leisure = tags.get('leisure', '')
     
     if amenity == 'restaurant' or amenity == 'fast_food' or amenity == 'food_court':
         category = 'restaurant'
@@ -39,6 +41,18 @@ def map_osm_to_app_data(osm_element):
         category = 'cafe'
     elif tourism == 'hotel' or tourism == 'guest_house' or tourism == 'hostel':
         category = 'hotel'
+    elif tourism == 'museum':
+        category = 'museum'
+    elif leisure == 'park':
+        category = 'park'
+    elif amenity in ['bar', 'pub', 'nightclub', 'biergarten']:
+        category = 'bar'
+    elif shop == 'supermarket':
+        category = 'supermarket'
+    elif amenity == 'library':
+        category = 'library'
+    elif amenity == 'marketplace':
+        category = 'marketplace'    
     
     # 2. Xử lý Tên
     name = tags.get('name', 'Địa điểm chưa đặt tên')
@@ -118,6 +132,14 @@ def get_locations():
       node["amenity"="restaurant"](around:{radius},{user_lat},{user_lng});
       node["amenity"="cafe"](around:{radius},{user_lat},{user_lng});
       node["tourism"="hotel"](around:{radius},{user_lat},{user_lng});
+      node["tourism"="museum"](around:{radius},{user_lat},{user_lng});     
+      node["leisure"="park"](around:{radius},{user_lat},{user_lng});        
+      node["amenity"="bar"](around:{radius},{user_lat},{user_lng});       
+      node["amenity"="pub"](around:{radius},{user_lat},{user_lng});         
+      node["amenity"="nightclub"](around:{radius},{user_lat},{user_lng});   
+      node["shop"="supermarket"](around:{radius},{user_lat},{user_lng});    
+      node["amenity"="library"](around:{radius},{user_lat},{user_lng});      
+      node["amenity"="marketplace"](around:{radius},{user_lat},{user_lng});
     );
     out body;
     """

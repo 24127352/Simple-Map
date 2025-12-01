@@ -3,6 +3,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const resIcon = L.icon({ iconUrl: 'Assets/res-icon.png', iconSize: [36, 36], shadowSize: [36, 36] });
     const cafeIcon = L.icon({ iconUrl: 'Assets/cafe-icon.png', iconSize: [36, 36], shadowSize: [36, 36] });
     const hotelIcon = L.icon({ iconUrl: 'Assets/hotel-icon.png', iconSize: [36, 36], shadowSize: [36, 36] });
+    const parkIcon = L.icon({ iconUrl: 'Assets/park-icon.png', iconSize: [36, 36], shadowSize: [36, 36] });
+    const museumIcon = L.icon({ iconUrl: 'Assets/museum-icon.png', iconSize: [36, 36], shadowSize: [36, 36] });
+    const barIcon = L.icon({ iconUrl: 'Assets/bar-icon.png', iconSize: [36, 36], shadowSize: [36, 36] });
+    const smarketIcon = L.icon({ iconUrl: 'Assets/supermarket-icon.png', iconSize: [36, 36], shadowSize: [36, 36] });
+    const marketIcon = L.icon({ iconUrl: 'Assets/marketplace-icon.png', iconSize: [36, 36], shadowSize: [36, 36] });
+    const libraryIcon = L.icon({ iconUrl: 'Assets/library-icon.png', iconSize: [36, 36], shadowSize: [36, 36] });
     const defaultIcon = L.icon({});
 
     // Mật độ giao thông
@@ -52,6 +58,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (category === 'restaurant') return resIcon;
         if (category === 'hotel') return hotelIcon;
         if (category === 'cafe') return cafeIcon;
+        if (category === 'bar') return barIcon;          
+        if (category === 'museum') return museumIcon;     
+        if (category === 'library') return libraryIcon;      
+        if (category === 'park') return parkIcon;        
+        if (category === 'supermarket') return smarketIcon; 
+        if (category === 'marketplace') return marketIcon;
         return defaultIcon;
     }
 
@@ -74,16 +86,43 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Xử lý nút lọc loại (Giữ nguyên)
-    const tagButtons = document.querySelectorAll('.tag-btn');
-    tagButtons.forEach(btn => {
+    // Xử lý nút lọc loại
+    const moreBtn = document.getElementById('more-btn');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('show-menu');
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!dropdownMenu.contains(e.target) && e.target !== moreBtn) {
+            dropdownMenu.classList.remove('show-menu');
+        }
+    });
+
+    const allTagButtons = document.querySelectorAll('.tag-btn');
+    
+    allTagButtons.forEach(btn => {
         btn.addEventListener('click', function () {
-            tagButtons.forEach(b => b.classList.remove('active'));
+            if (this.id === 'more-btn') return;
+
+            allTagButtons.forEach(b => b.classList.remove('active'));
+
             this.classList.add('active');
-            renderMarkers(this.getAttribute('data-type'));
+
+            if (this.classList.contains('dropdown-item')) {
+                moreBtn.classList.add('active');
+                dropdownMenu.classList.remove('show-menu');
+            }
+
+            const type = this.getAttribute('data-type');
+            renderMarkers(type);
         });
     });
+
     closeBtn.addEventListener('click', () => detailsPanel.classList.add('hidden'));
+    
 
     const trafficBtn = document.getElementById('traffic-toggle');
     trafficFlowLayer.addTo(map);
