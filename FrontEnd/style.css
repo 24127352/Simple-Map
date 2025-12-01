@@ -1,6 +1,11 @@
-body {
-    margin: 0;
-    padding: 0;
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    position: fixed;
 }
 
 #map {
@@ -40,7 +45,7 @@ body {
 .tag-bar{
     position: absolute;
     top: 20px;
-    left: 60px;
+    left: 20px;
     z-index: 1000;
     display: flex;
     gap: 10px;
@@ -62,9 +67,17 @@ body {
     border-color: #0056b3;
 }
 
-.tag-btn:hover{
-    transform: translateY(-3px);
-    background-color: #f0f0f0;
+@media (hover: hover) {
+    .tag-btn:hover, .traffic-btn:hover {
+        background-color: #f0f0f0;
+        transform: translateY(-2px);
+    }
+}
+
+.tag-btn.active, .traffic-btn.active {
+    background-color: #007bff !important;
+    color: white !important;
+    border-color: #0056b3 !important;
 }
 
 #traffic-toggle {
@@ -146,4 +159,97 @@ body {
     background-color: #e3f2fd;
     color: #007bff;
     font-weight: bold;
+}
+
+/* --- GIAO DIỆN MOBILE --- */
+@media (max-width: 768px) {
+
+    .tag-bar {
+        position: absolute;
+        top: 10px;
+        left: 0;
+        width: 100%;
+        padding: 0 10px; 
+        
+        display: flex; 
+        gap: 8px;     
+        
+        overflow-x: auto; 
+        white-space: nowrap;
+        
+        
+        -ms-overflow-style: none; scrollbar-width: none;
+        z-index: 9999;
+    }
+    .tag-bar::-webkit-scrollbar { display: none; }
+
+    .dropdown-content {
+        position: fixed; 
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); 
+        
+        width: 80%;       
+        max-height: 60vh; 
+        overflow-y: auto; 
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 0 0 1000px rgba(0,0,0,0.5); 
+        padding: 10px;
+        z-index: 10002; 
+    }
+    
+    .dropdown-content .dropdown-item {
+        padding: 15px; 
+        border-bottom: 1px solid #eee;
+        font-size: 16px;
+    }
+
+   
+    .details-panel {
+        position: fixed; 
+        width: 100%;     
+        max-width: 100%; 
+        height: auto;
+        max-height: 50vh;
+        
+        bottom: 0;       
+        left: 0;
+        right: 0;
+        top: auto;       
+        
+        border-radius: 20px 20px 0 0;
+        padding: 20px;  
+        padding-right: 40px;
+        
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        z-index: 10001;
+        transition: transform 0.3s ease;
+    }
+    
+    .details-panel #close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        
+        background: #f0f0f0;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        font-weight: bold;
+        z-index: 2;
+    }
+
+    .details-panel.hidden {
+        display: block;
+        transform: translateY(100%);
+    }
+
+    #traffic-toggle {
+        bottom: 90px;
+        left: 10px;
+        font-size: 12px;
+        padding: 8px 12px;
+    }
 }

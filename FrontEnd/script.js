@@ -20,7 +20,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     );
     
-    const map = L.map('map').setView([10.7769, 106.7009], 13);
+    const map = L.map('map', {
+        zoomControl: false 
+    }).setView([10.7769, 106.7009], 13);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19, attribution: '&copy; OpenStreetMap'
     }).addTo(map);
@@ -36,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- HÀM GỌI API ---
     function fetchLocations(userLat, userLng, radiusInMeters) {
-        const apiUrl = `http://127.0.0.1:5000/api/locations?lat=${userLat}&lng=${userLng}&radius=${radiusInMeters}`;
+        const apiUrl = `http://192.168.123.120:5000/api/locations?lat=${userLat}&lng=${userLng}&radius=${radiusInMeters}`;
 
         console.log(`Đang quét dữ liệu thực tế...`);
 
