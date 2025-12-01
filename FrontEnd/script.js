@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- HÀM GỌI API ---
     function fetchLocations(userLat, userLng, radiusInMeters) {
-        const apiUrl = `http://192.168.123.120:5000/api/locations?lat=${userLat}&lng=${userLng}&radius=${radiusInMeters}`;
+        const apiUrl = `http://127.0.0.1:5000/api/locations?lat=${userLat}&lng=${userLng}&radius=${radiusInMeters}`; //Thay ip máy mình vào đây
 
         console.log(`Đang quét dữ liệu thực tế...`);
 
