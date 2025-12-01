@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const hotelIcon = L.icon({ iconUrl: 'Assets/hotel-icon.png', iconSize: [36, 36], shadowSize: [36, 36] });
     const defaultIcon = L.icon({});
 
+    // Mật độ giao thông
     const trafficFlowLayer = L.tileLayer(
         "https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=l6e2nZO9QtCFvw3Gi69l2NjlwHiElGpC",
         { opacity: 0.8 }
@@ -81,10 +82,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     closeBtn.addEventListener('click', () => detailsPanel.classList.add('hidden'));
     trafficFlowLayer.addTo(map);
-
-    // --- QUY TRÌNH CHÍNH (LOGIC MỚI) ---
     
-    // 1. Kiểm tra Geolocation trước
+    // 1. Kiểm tra Geolocation
     if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
             (pos) => {
@@ -95,9 +94,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 map.setView([lat, lng], 15);
                 L.marker([lat, lng]).addTo(map).bindPopup('Bạn ở đây').openPopup();
 
-                // 2. GỌI API LẤY DỮ LIỆU SAU KHI CÓ VỊ TRÍ
-                // Tìm trong bán kính 2000 mét
-                fetchLocations(lat, lng, 2000); 
+                // 2. GỌI API LẤY DỮ LIỆU
+                // Tìm trong bán kính 1000 mét
+                fetchLocations(lat, lng, 1000); 
             },
             // THẤT BẠI (User chặn vị trí)
             (error) => {
