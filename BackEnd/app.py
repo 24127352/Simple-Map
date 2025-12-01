@@ -6,7 +6,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# --- 1. HÀM TÍNH KHOẢNG CÁCH (Mang từ bài cũ sang) ---
+# --- 1. HÀM TÍNH KHOẢNG CÁCH ---
 def calculate_distance(lat1, lon1, lat2, lon2):
     if not lat1 or not lon1 or not lat2 or not lon2:
         return 0
@@ -43,10 +43,10 @@ def map_osm_to_app_data(osm_element):
     # 2. Xử lý Tên
     name = tags.get('name', 'Địa điểm chưa đặt tên')
     
-    # 3. Xử lý Địa chỉ (Cố gắng lấy nhiều trường hơn)
+    # 3. Xử lý Địa chỉ
     house_number = tags.get('addr:housenumber', '')
     street = tags.get('addr:street', '')
-    full_address = tags.get('addr:full', '') # Một số người điền thẳng vào đây
+    full_address = tags.get('addr:full', '')
     
     address = ""
     if full_address:
@@ -105,7 +105,7 @@ def get_locations():
     # Lấy tọa độ User
     user_lat = request.args.get('lat', type=float)
     user_lng = request.args.get('lng', type=float)
-    radius = request.args.get('radius', default=1000, type=int)
+    radius = request.args.get('radius', default=2000, type=int)
 
     if not user_lat or not user_lng:
         return jsonify([])
