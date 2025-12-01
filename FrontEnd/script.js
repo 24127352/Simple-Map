@@ -8,7 +8,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // Mật độ giao thông
     const trafficFlowLayer = L.tileLayer(
         "https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=l6e2nZO9QtCFvw3Gi69l2NjlwHiElGpC",
-        { opacity: 0.8 }
+        {   opacity: 0.8, 
+            maxZoom: 19,
+            maxNavtiveZoom: 18
+        }
     );
     
     const map = L.map('map').setView([10.7769, 106.7009], 13);
