@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
         "https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=l6e2nZO9QtCFvw3Gi69l2NjlwHiElGpC",
         {   opacity: 0.8, 
             maxZoom: 19,
-            maxNavtiveZoom: 18
+            maxNativeZoom: 18
         }
     );
     
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const placeDescription = document.getElementById('res-description');
     const closeBtn = document.getElementById('close-btn');
 
-    // --- HÀM GỌI API MỚI (CÓ THAM SỐ) ---
+    // --- HÀM GỌI API ---
     function fetchLocations(userLat, userLng, radiusInMeters) {
         const apiUrl = `http://127.0.0.1:5000/api/locations?lat=${userLat}&lng=${userLng}&radius=${radiusInMeters}`;
 
@@ -84,7 +84,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
     closeBtn.addEventListener('click', () => detailsPanel.classList.add('hidden'));
+
+    const trafficBtn = document.getElementById('traffic-toggle');
     trafficFlowLayer.addTo(map);
+    trafficBtn.addEventListener('click', function() {
+        if (map.hasLayer(trafficFlowLayer)) {
+            map.removeLayer(trafficFlowLayer);
+            this.classList.remove('active');
+        } else {
+            trafficFlowLayer.addTo(map);
+            this.classList.add('active');
+        }
+    });
     
     // 1. Kiểm tra Geolocation
     if ('geolocation' in navigator) {
@@ -105,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
             (error) => {
                 alert("Bạn cần cho phép vị trí để tìm quán quanh đây. Đang dùng vị trí mặc định tại TP.HCM");
                 // Dùng vị trí mặc định (Quận 1) nếu user chặn
-                fetchLocations(10.7769, 106.7009, 5000);
+                fetchLocations(10.7769, 106.7009, 1000);
             }
         );
     } else {
