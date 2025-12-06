@@ -127,7 +127,6 @@ document.addEventListener('DOMContentLoaded', function () {
     
 
     const trafficBtn = document.getElementById('traffic-toggle');
-    trafficFlowLayer.addTo(map);
     trafficBtn.addEventListener('click', function() {
         if (map.hasLayer(trafficFlowLayer)) {
             map.removeLayer(trafficFlowLayer);
