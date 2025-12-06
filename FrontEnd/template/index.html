@@ -14,7 +14,7 @@
 
     <div id="restaurant-details" class="details-panel hidden">
         <button id="close-btn">X</button>
-        <h2 id="res-name"></h2>3
+        <h2 id="res-name"></h2> 
         <p id="res-address"></p>
         <p id="res-description"></p>
     </div>
@@ -24,9 +24,37 @@
         <button class ="tag-btn" data-type ="restaurant" > Nhà hàng </button>
         <button class ="tag-btn" data-type ="hotel" > Khách sạn </button>
         <button class ="tag-btn" data-type ="cafe" > Cafe </button>
+
+        <!-- Nút Danh mục mở rộng thêm vào -->
+        <button id="more-btn" class="tag-btn more-btn">...</button>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- MENU DANH MỤC (FULL-SCREEN OVERLAY) -->
+    <div id="category-menu" class="category-menu hidden">
+
+        <div class="menu-header">
+            <button id="menu-back-btn" class="back-btn">←</button>
+            <h2>Danh mục</h2>
+        </div>
+
+        <div class="menu-group">
+            <div class="group-title">Ăn uống</div>
+
+            <button class="menu-item" data-type="bars">Quán bar</button>
+            <button class="menu-item" data-type="dessert">Tráng miệng</button>
+            <button class="menu-item" data-type="brunch">Brunch / Bữa xế</button>
+            <button class="menu-item" data-type="takeout">Mang đi</button>
+            <button class="menu-item" data-type="delivery">Giao tận nơi</button>
+        </div>
+
+        <div class="menu-group">
+            <div class="group-title">Hoạt động</div>
+
+            <button class="menu-item" data-type="parks">Công viên</button>
+        </div>
+
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

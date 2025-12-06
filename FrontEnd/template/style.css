@@ -65,3 +65,51 @@ body {
 .tag-btn:hover{
     background-color: #f0f0f0;
 }
+
+/* Thêm Category Menu (FULLSCREEN) */
+.category-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    z-index: 2000;
+    padding: 20px;
+    overflow-y: auto;
+    font-family: sans-serif;
+}
+
+.menu-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    font-size: 26px;
+    cursor: pointer;
+}
+
+.menu-group {
+    margin-top: 25px;
+}
+
+.group-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.menu-item {
+    width: 100%;
+    text-align: left;
+    padding: 15px 0;
+    border-bottom: 1px solid #ddd;
+    font-size: 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}

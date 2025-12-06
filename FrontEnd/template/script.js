@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         //Tạo marker sau khi lọc
         taggedLocations.forEach(location => {
-            const marker = L.marker([location.lat, location.lng], { icon: getIconByCategory(location.category) }).addTo(map);
+            const marker = L.marker([location.lat, location.lng], { icon: getIconByCategory(location.category) }); //Marker bị add 2 lần vào map nên xóa
 
             //Click event
             marker.on('click', function () {
@@ -130,4 +130,45 @@ document.addEventListener('DOMContentLoaded', function () {
             trafficFlowLayer.addTo(map);
         });
     }
+
+    //MENU DANH MỤC
+    const moreBtn = document.getElementById("more-btn");
+    const categoryMenu = document.getElementById("category-menu");
+    const backBtn = document.getElementById("menu-back-btn");
+
+    moreBtn.addEventListener("click", () => {
+        categoryMenu.classList.remove("hidden");
+    });
+
+    backBtn.addEventListener("click", () => {
+        categoryMenu.classList.add("hidden");
+    });
+
+    const menuItems = document.querySelectorAll(".menu-item");
+
+    menuItems.forEach(item => {
+        item.addEventListener("click", function () {
+            const type = this.getAttribute("data-type");
+            const tagBar = document.querySelector(".tag-bar");
+
+            // Nếu tag chưa có -> tạo nút
+            if (!document.querySelector(`button[data-type="${type}"]`)) {
+                const newBtn = document.createElement("button");
+                newBtn.classList.add("tag-btn");
+                newBtn.textContent = this.textContent;
+                newBtn.setAttribute("data-type", type);
+
+                newBtn.addEventListener("click", () => {
+                    tagButtons.forEach(b => b.classList.remove("active"));
+                    newBtn.classList.add("active");
+                    renderMarkers(type);
+                });
+
+                tagBar.insertBefore(newBtn, moreBtn);
+            }
+
+            categoryMenu.classList.add("hidden");
+            renderMarkers(type);
+        });
+    });
 });
