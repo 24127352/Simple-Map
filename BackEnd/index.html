@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Map Application - VS Code</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="map-container">
+        <div id="control-panel">
+            <div id="search-container">
+                <input type="text" id="search-input" placeholder="Nhập địa điểm...">
+                <button id="search-btn">🔍 Tìm kiếm</button>
+                <button id="route-btn">🛣️ Tìm đường</button>
+                <button id="current-location-btn">📍 Vị trí tôi</button>
+            </div>
+            <div id="status">Đang tải bản đồ...</div>
+        </div>
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // --- KHỞI TẠO BIẾN TOÀN CỤC ---
+        const map = L.map('map');
+        
+        // Fix lỗi map trắng nếu chưa load
+        setTimeout(() => map.invalidateSize(), 500);
+
+        // Set vị trí mặc định
+        map.setView([10.762622, 106.660172], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let currentLocation = null;
+        let currentMarker = null;
+        let routingControl = null;
+        let lastSearchedLocation = null;
+        let lastSearchMarker = null;
+
+        // --- LẤY VỊ TRÍ HIỆN TẠI (CLIENT SIDE) ---
+        function locateUser() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        currentLocation = [position.coords.latitude, position.coords.longitude];
+                        map.setView(currentLocation, 15);
+
+                        if (currentMarker) map.removeLayer(currentMarker);
+
+                        currentMarker = L.marker(currentLocation)
+                            .addTo(map)
+                            .bindPopup("Vị trí của bạn")
+                            .openPopup();
+                    },
+                    error => {
+                        alert("Không thể lấy vị trí: " + error.message);
+                    }
+                );
+            } else {
+                alert("Trình duyệt không hỗ trợ xác định vị trí");
+            }
+        }
+
+        // --- TÌM KIẾM (GỌI FLASK ENDPOINT) ---
+        async function searchLocation(query) {
+            try {
+                // GỌI ENDPOINT FLASK
+                const res = await fetch(`/geo_service/search?q=${encodeURIComponent(query)}`);
+                
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    alert("Không tìm thấy địa điểm: " + (errorData.error || res.statusText));
+                    return;
+                }
+
+                const data = await res.json(); // Nhận {lat: ..., lon: ..., display_name: ...} từ Flask
+                const coords = [data.lat, data.lon];
+                
+                if (lastSearchMarker) map.removeLayer(lastSearchMarker);
+
+                map.setView(coords, 15);
+                lastSearchMarker = L.marker(coords).addTo(map).bindPopup(data.display_name).openPopup();
+                lastSearchedLocation = coords;
+
+            } catch (err) {
+                console.error("Lỗi tìm kiếm:", err);
+                alert("Lỗi kết nối hoặc xử lý tìm kiếm.");
+            }
+        }
+
+        // --- TÌM ĐƯỜNG (GỌI FLASK ENDPOINT) ---
+        async function findRoute() {
+            if (!currentLocation) {
+                alert("Bạn cần lấy vị trí hiện tại trước.");
+                return;
+            }
+            if (!lastSearchedLocation) {
+                alert("Hãy tìm kiếm địa điểm trước.");
+                return;
+            }
+
+            const [s_lat, s_lon] = currentLocation;
+            const [d_lat, d_lon] = lastSearchedLocation;
+
+            // Xây dựng URL cho endpoint Flask tìm đường
+            const url = `/geo_service/route?start_lat=${s_lat}&start_lon=${s_lon}&dest_lat=${d_lat}&dest_lon=${d_lon}`;
+            
+            try {
+                // GỌI ENDPOINT FLASK
+                const res = await fetch(url);
+                
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    alert("Không thể tìm được đường đi: " + (errorData.error || res.statusText));
+                    return;
+                }
+
+                const data = await res.json(); // Nhận {coordinates: [[lat, lon], ...]} từ Flask
+                const coords = data.coordinates; 
+
+                if (routingControl) map.removeLayer(routingControl);
+
+                if (coords && coords.length > 0) {
+                    routingControl = L.polyline(coords, { color: 'blue', weight: 4 }).addTo(map);
+                    map.fitBounds(routingControl.getBounds());
+                } else {
+                    alert("Không thể tìm được đường đi.");
+                }
+
+            } catch (err) {
+                console.error("Lỗi tìm đường:", err);
+                alert("Lỗi kết nối hoặc xử lý tìm đường.");
+            }
+        }
+
+        // --- GÁN EVENT ---
+        document.getElementById("current-location-btn").onclick = locateUser;
+        document.getElementById("search-btn").onclick = () => {
+            const q = document.getElementById("search-input").value;
+            if (q) searchLocation(q); 
+        };
+        document.getElementById("route-btn").onclick = findRoute;
+
+        // --- LOAD BAN ĐẦU ---
+        window.onload = () => {
+            locateUser();
+            setTimeout(() => map.invalidateSize(), 300);
+        };
+    </script>
+</body>
+</html>

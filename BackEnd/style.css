@@ -1,0 +1,102 @@
+/* style.css */
+
+/* Đặt body và html để chiếm toàn bộ viewport, loại bỏ margin mặc định */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+}
+
+/* Container chính bao gồm Control Panel và Map */
+#map-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Chiếm trọn chiều cao viewport */
+    width: 100%;
+    overflow: hidden; /* Ngăn cuộn trang không cần thiết */
+}
+
+/* Thanh điều khiển */
+#control-panel {
+    padding: 15px;
+    background: #ffffff;
+    border-bottom: 2px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* Đảm bảo nó nằm trên bản đồ */
+}
+
+#search-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#search-input {
+    flex-grow: 1;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+#search-input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Nút bấm chung */
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.3s, opacity 0.3s;
+    white-space: nowrap; /* Ngăn nút bị xuống dòng */
+}
+
+/* Kiểu dáng cho từng loại nút */
+#search-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+#route-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+#current-location-btn {
+    background-color: #ffc107;
+    color: #333;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* Bản đồ */
+#map {
+    flex-grow: 1;
+    height: 100%;
+    width: 100%;
+    /* Quan trọng: Leaflet cần một chiều cao/rộng rõ ràng */
+}
+
+/* Trạng thái loading */
+#status {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Điều chỉnh lại kiểu dáng popup của Leaflet (tùy chọn) */
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+}
