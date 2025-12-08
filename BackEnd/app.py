@@ -1,177 +1,69 @@
-import requests
-import math
-from flask import Flask, jsonify, request
-from flask_cors import CORS
+from flask import Flask, render_template, jsonify, request
+# Import các hàm xử lý logic từ geo_service.py
+from geo_service import search_location, find_route
 
 app = Flask(__name__)
-CORS(app)
 
-# --- 1. HÀM TÍNH KHOẢNG CÁCH ---
-def calculate_distance(lat1, lon1, lat2, lon2):
-    if not lat1 or not lon1 or not lat2 or not lon2:
-        return 0
-    
-    R = 6371000  # Bán kính trái đất (mét)
-    phi1 = math.radians(lat1)
-    phi2 = math.radians(lat2)
-    delta_phi = math.radians(lat2 - lat1)
-    delta_lambda = math.radians(lon2 - lon1)
-
-    a = math.sin(delta_phi / 2)**2 + \
-        math.cos(phi1) * math.cos(phi2) * \
-        math.sin(delta_lambda / 2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    
-    return round(R * c)
-
-# --- 2. HÀM DỌN DẸP DỮ LIỆU ---
-def map_osm_to_app_data(osm_element):
-    tags = osm_element.get('tags', {})
-    
-    # 1. Xác định Category
-    category = 'other' 
-    amenity = tags.get('amenity', '')
-    tourism = tags.get('tourism', '')
-    shop = tags.get('shop', '') 
-    leisure = tags.get('leisure', '')
-    
-    if amenity == 'restaurant' or amenity == 'fast_food' or amenity == 'food_court':
-        category = 'restaurant'
-    elif amenity == 'cafe' or amenity == 'bar' or amenity == 'pub':
-        category = 'cafe'
-    elif tourism == 'hotel' or tourism == 'guest_house' or tourism == 'hostel':
-        category = 'hotel'
-    elif tourism == 'museum':
-        category = 'museum'
-    elif leisure == 'park':
-        category = 'park'
-    elif amenity in ['bar', 'pub', 'nightclub', 'biergarten']:
-        category = 'bar'
-    elif shop == 'supermarket':
-        category = 'supermarket'
-    elif amenity == 'library':
-        category = 'library'
-    elif amenity == 'marketplace':
-        category = 'marketplace'    
-    
-    # 2. Xử lý Tên
-    name = tags.get('name', 'Địa điểm chưa đặt tên')
-    
-    # 3. Xử lý Địa chỉ
-    house_number = tags.get('addr:housenumber', '')
-    street = tags.get('addr:street', '')
-    full_address = tags.get('addr:full', '')
-    
-    address = ""
-    if full_address:
-        address = full_address
-    elif house_number and street:
-        address = f"{house_number} {street}"
-    elif street:
-        address = f"Đường {street}"
-    else:
-        address = "Chưa có địa chỉ chi tiết"
-
-    # 4. Xử lý Mô tả (Tạo mô tả phong phú hơn)
-    description_parts = []
-    
-    # - Thêm loại món ăn (Bỏ vì quá ít dữ liệu)
-    # cuisine = tags.get('cuisine')
-    # if cuisine:
-    #    description_parts.append(f"Món: {cuisine.replace('_', ' ').capitalize()}")
-        
-    # - Thêm giờ mở cửa
-    opening_hours = tags.get('opening_hours')
-    if opening_hours:
-        description_parts.append(f"Giờ mở cửa: {opening_hours}")
-        
-    # - Thêm số điện thoại
-    phone = tags.get('phone') or tags.get('contact:phone')
-    if phone:
-        description_parts.append(f"SĐT: {phone}")
-        
-    # - Thêm website
-    # website = tags.get('website') or tags.get('contact:website')
-    # if website:
-    #    description_parts.append("Có website")
-
-    # Ghép các phần lại thành mô tả. Nếu không có gì thì tạo mô tả mặc định dựa theo loại
-    if description_parts:
-        description = " | ".join(description_parts)
-    else:
-        if category == 'restaurant': description = "Nhà hàng ăn uống"
-        elif category == 'cafe': description = "Quán cafe & đồ uống"
-        elif category == 'hotel': description = "Dịch vụ lưu trú"
-        else: description = "Địa điểm tham quan"
-
-    return {
-        "id": osm_element['id'],
-        "name": name,
-        "category": category,
-        "address": address,
-        "description": description,
-        "lat": osm_element['lat'],
-        "lng": osm_element['lon']
-    }
-
-@app.route('/api/locations')
-def get_locations():
-    # Lấy tọa độ User
-    user_lat = request.args.get('lat', type=float)
-    user_lng = request.args.get('lng', type=float)
-    radius = request.args.get('radius', default=2000, type=int)
-
-    if not user_lat or not user_lng:
-        return jsonify([])
-
-    # Gọi OpenStreetMap
-    overpass_url = "http://overpass-api.de/api/interpreter"
-    overpass_query = f"""
-    [out:json];
-    (
-      node["amenity"="restaurant"](around:{radius},{user_lat},{user_lng});
-      node["amenity"="cafe"](around:{radius},{user_lat},{user_lng});
-      node["tourism"="hotel"](around:{radius},{user_lat},{user_lng});
-      node["tourism"="museum"](around:{radius},{user_lat},{user_lng});     
-      node["leisure"="park"](around:{radius},{user_lat},{user_lng});        
-      node["amenity"="bar"](around:{radius},{user_lat},{user_lng});       
-      node["amenity"="pub"](around:{radius},{user_lat},{user_lng});         
-      node["amenity"="nightclub"](around:{radius},{user_lat},{user_lng});   
-      node["shop"="supermarket"](around:{radius},{user_lat},{user_lng});    
-      node["amenity"="library"](around:{radius},{user_lat},{user_lng});      
-      node["amenity"="marketplace"](around:{radius},{user_lat},{user_lng});
-    );
-    out body;
+# --- ENDPOINT: TÌM KIẾM ĐỊA ĐIỂM ---
+@app.route('/geo_service/search', methods=['GET'])
+def search_location_route():
     """
+    Xử lý request tìm kiếm từ client.
+    Tham số: q (query string)
+    """
+    query = request.args.get('q')
+    if not query:
+        return jsonify({"error": "Missing query parameter 'q'"}), 400
+    
+    # Gọi hàm xử lý logic trong geo_service.py
+    data = search_location(query)
+    
+    if data:
+        # Trả về kết quả tìm kiếm (lat, lon, display_name)
+        return jsonify(data)
+    
+    return jsonify({"error": "Location not found"}), 404
 
+# --- ENDPOINT: TÌM ĐƯỜNG ---
+@app.route('/geo_service/route', methods=['GET'])
+def find_route_route():
+    """
+    Xử lý request tìm đường từ client.
+    Tham số: start_lat, start_lon, dest_lat, dest_lon
+    """
+    start_lat = request.args.get('start_lat')
+    start_lon = request.args.get('start_lon')
+    dest_lat = request.args.get('dest_lat')
+    dest_lon = request.args.get('dest_lon')
+
+    if not all([start_lat, start_lon, dest_lat, dest_lon]):
+        return jsonify({"error": "Missing coordinates"}), 400
+    
     try:
-        print(f"Đang quét tại {user_lat}, {user_lng}...")
-        response = requests.get(overpass_url, params={'data': overpass_query})
-        data = response.json()
-        
-        results = []
-        for element in data['elements']:
-            if 'tags' in element and 'name' in element['tags']:
-                # 1. Format dữ liệu
-                formatted_place = map_osm_to_app_data(element)
-                
-                # 2. TÍNH KHOẢNG CÁCH
-                dist = calculate_distance(
-                    user_lat, user_lng, 
-                    formatted_place['lat'], formatted_place['lng']
-                )
-                formatted_place['distance'] = dist
-                results.append(formatted_place)
-        
-        # 4. Sắp xếp quán từ gần đến xa
-        results.sort(key=lambda x: x['distance'])
-        
-        print(f"-> Tìm thấy {len(results)} địa điểm.")
-        return jsonify(results)
+        # Chuyển đổi sang float và đóng gói thành tuple
+        start = (float(start_lat), float(start_lon))
+        dest = (float(dest_lat), float(dest_lon))
+    except ValueError:
+        return jsonify({"error": "Invalid coordinate format"}), 400
 
-    except Exception as e:
-        print("Lỗi:", e)
-        return jsonify([])
+    # Gọi hàm xử lý logic trong geo_service.py
+    route_coords = find_route(start, dest)
+    
+    if route_coords:
+        # Trả về mảng các tọa độ đường đi
+        return jsonify({"coordinates": route_coords})
+    
+    return jsonify({"error": "Could not find route"}), 404
+
+# --- ROUTE: TRANG CHỦ ---
+@app.route('/')
+def index():
+    """
+    Render file HTML giao diện chính.
+    """
+    return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Chạy ứng dụng Flask trên cổng mặc định (5000)
+    # Lưu ý: Bạn cần tạo thư mục 'templates' và đặt 'index.html' vào đó.
+    app.run(debug=True)
