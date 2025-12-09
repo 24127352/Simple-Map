@@ -155,12 +155,6 @@ html, body {
     display: block;
 }
 
-.dropdown-item.active {
-    background-color: #e3f2fd;
-    color: #007bff;
-    font-weight: bold;
-}
-
 /* --- GIAO DIỆN MOBILE --- */
 @media (max-width: 768px) {
 
@@ -279,3 +273,55 @@ html, body {
 .leaflet-routing-container {
     display: none !important; 
 }
+
+/* FULLSCREEN DROPDOWN trên PC */
+@media (min-width: 769px) {
+    .dropdown-content {
+        position: fixed;       /* Cố định toàn màn hình */
+        top: 0;
+        left: 0;
+        width: 100vw;          /* Chiếm toàn bộ chiều ngang */
+        height: 100vh;         /* Chiếm toàn bộ chiều cao */
+        background-color: white;
+        border-radius: 0;      /* Bỏ bo góc */
+        box-shadow: none;      /* Bỏ bóng */
+        padding: 20px;
+        z-index: 10000;
+        overflow-y: auto;      /* Cho phép cuộn nếu nội dung dài */
+    }
+
+    .dropdown-content .dropdown-item {
+        font-size: 18px;       /* Tăng cỡ chữ cho dễ nhìn */
+        padding: 15px 20px;    /* Khoảng cách rộng rãi hơn */
+        border-bottom: 1px solid #eee;
+    }
+}
+
+.dropdown-exit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 15px 0;
+    margin-bottom: 10px;
+
+    background-color: #f0f0f0;
+    border-bottom: 2px solid #ccc;
+
+    pointer-events: none;   
+}
+
+/* Mũi tên bên trái, nổi bật hơn item */
+.dropdown-exit .exit-arrow {
+    position: absolute;
+    left: 15px;                 /* sát bên trái */
+    font-size: 22px;            /* to hơn để nổi bật */
+    font-weight: 900;
+    color: #007bff;             /* xanh dương để nổi */
+    pointer-events: auto;  
+    cursor: pointer;       
+}
+

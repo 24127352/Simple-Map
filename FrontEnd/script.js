@@ -111,6 +111,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Nút thoát trong DROPDOWN
+    document.querySelector(".dropdown-exit").onclick = () => {
+        dropdownMenu.classList.remove("show-menu");
+    };
+
     const allTagButtons = document.querySelectorAll('.tag-btn');
     
     allTagButtons.forEach(btn => {
