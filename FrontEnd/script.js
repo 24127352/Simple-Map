@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // ====== THÊM BIẾN TOÀN CỤC MỚI ======
+    let userLat = null;
+    let userLng = null;
+    let selectedLat = null;
+    let selectedLng = null;
+    let currentRoute = null;
+    // ===================================
+
     // --- KHỞI TẠO MAP & ICON ---
     const resIcon = L.icon({ iconUrl: 'Assets/res-icon.png', iconSize: [36, 36], shadowSize: [36, 36] });
     const cafeIcon = L.icon({ iconUrl: 'Assets/cafe-icon.png', iconSize: [36, 36], shadowSize: [36, 36] });
@@ -31,19 +39,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const markersLayer = L.layerGroup().addTo(map);
 
     const detailsPanel = document.getElementById('restaurant-details');
-    const placeImage = document.getElementById('res-image');
     const placeName = document.getElementById('res-name');
     const placeAddress = document.getElementById('res-address');
     const placeDescription = document.getElementById('res-description');
     const closeBtn = document.getElementById('close-btn');
-    const findRouteBtn = document.getElementById('find-route-btn');
-
-    let currentLocation = null;
-    let userCoords = null;
-    let routingControl = null;
 
     // --- HÀM GỌI API ---
     function fetchLocations(userLat, userLng, radiusInMeters) {
+        // --- LƯU Ý: khi test mobile, thay IP 127.0.0.1 bằng IP PC của bạn ---
         const apiUrl = `http://127.0.0.1:5000/api/locations?lat=${userLat}&lng=${userLng}&radius=${radiusInMeters}`; //Thay ip máy mình vào đây
 
         console.log(`Đang quét dữ liệu thực tế...`);
@@ -78,14 +81,17 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderMarkers(type) {
         markersLayer.clearLayers();
         const filteredLocations = locations.filter(location => type === 'all' || location.category === type);
-        
+
         filteredLocations.forEach(location => {
             const iconToUse = getIconByCategory(location.category);
             const marker = L.marker([location.lat, location.lng], { icon: iconToUse });
             
             marker.on('click', () => {
-                currentLocation = location;
-                placeImage.src = location.image || 'https://via.placeholder.com/300x200?text=Không+có+hình+ảnh';
+                // ====== CHỖ THÊM: lưu tọa độ điểm được chọn ======
+                selectedLat = location.lat;
+                selectedLng = location.lng;
+                // ================================================
+
                 placeName.textContent = location.name;
                 // Hiển thị thêm khoảng cách
                 placeAddress.textContent = `Cách bạn: ${location.distance} mét - Đ/c: ${location.address}`;
@@ -132,35 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     closeBtn.addEventListener('click', () => detailsPanel.classList.add('hidden'));
-
-    // Xử lý nút tìm đường: hiển thị tuyến trong bản đồ
-    findRouteBtn.addEventListener('click', () => {
-        if (!currentLocation || !userCoords) {
-            alert('Vui lòng chọn một địa điểm và bật vị trí.');
-            return;
-        }
-
-        // Xóa routing cũ nếu có
-        if (routingControl) {
-            map.removeControl(routingControl);
-            routingControl = null;
-        }
-
-        // Tạo tuyến đi từ vị trí người dùng đến địa điểm
-        routingControl = L.Routing.control({
-            waypoints: [
-                L.latLng(userCoords.lat, userCoords.lng),
-                L.latLng(currentLocation.lat, currentLocation.lng)
-            ],
-            routeWhileDragging: false,
-            fitSelectedRoutes: true,
-            showAlternatives: false,
-            createMarker: () => null,
-            lineOptions: {
-                styles: [{ color: '#007bff', opacity: 0.9, weight: 6 }]
-            }
-        }).addTo(map);
-    });
+    
 
     const trafficBtn = document.getElementById('traffic-toggle');
     trafficBtn.addEventListener('click', function() {
@@ -180,8 +158,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
 
-                // Lưu vị trí người dùng
-                userCoords = { lat, lng };
+                // ====== CHỖ THÊM: lưu vị trí người dùng ======
+                userLat = lat;
+                userLng = lng;
+                // ============================================
 
                 // Di chuyển map về chỗ người dùng
                 map.setView([lat, lng], 15);
@@ -195,13 +175,64 @@ document.addEventListener('DOMContentLoaded', function () {
             (error) => {
                 alert("Bạn cần cho phép vị trí để tìm quán quanh đây. Đang dùng vị trí mặc định tại TP.HCM");
                 // Dùng vị trí mặc định (Quận 1) nếu user chặn
-                userCoords = { lat: 10.7769, lng: 106.7009 };
-                map.setView([10.7769, 106.7009], 13);
-                L.marker([10.7769, 106.7009]).addTo(map).bindPopup('Vị trí mặc định').openPopup();
                 fetchLocations(10.7769, 106.7009, 1000);
             }
         );
     } else {
         alert("Trình duyệt không hỗ trợ vị trí.");
     }
+
+    // ====== CHỖ THÊM: HÀM GỌI OSRM ======
+    async function getRouteFromOSRM(startLat, startLng, endLat, endLng) {
+
+        const url =
+            `https://router.project-osrm.org/route/v1/driving/` +
+            `${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if (!data.routes || data.routes.length === 0) return null;
+
+            return data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+        } catch (e) {
+            console.error("OSRM error:", e);
+            return null;
+        }
+    }
+    // ================================================
+
+    // ====== CHỖ THÊM: XỬ LÝ NÚT CHỈ ĐƯỜNG ======
+    document.getElementById('route-btn').addEventListener('click', async () => {
+
+        if (!userLat || !userLng) {
+            alert("Không xác định được vị trí hiện tại!");
+            return;
+        }
+
+        if (!selectedLat || !selectedLng) {
+            alert("Chưa chọn địa điểm!");
+            return;
+        }
+
+        if (currentRoute) map.removeLayer(currentRoute);
+
+        const routeCoords = await getRouteFromOSRM(userLat, userLng, selectedLat, selectedLng);
+
+        if (!routeCoords) {
+            alert('Không tìm được đường đi!');
+            return;
+        }
+
+        currentRoute = L.polyline(routeCoords, {
+            weight: 5,
+            opacity: 0.8,
+            color: 'blue'
+        }).addTo(map);
+
+        map.fitBounds(currentRoute.getBounds());
+    });
+    // ================================================
+
 });

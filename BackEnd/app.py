@@ -1,3 +1,4 @@
+# app.py
 import requests
 import math
 from flask import Flask, jsonify, request
@@ -75,11 +76,6 @@ def map_osm_to_app_data(osm_element):
     # 4. Xử lý Mô tả (Tạo mô tả phong phú hơn)
     description_parts = []
     
-    # - Thêm loại món ăn (Bỏ vì quá ít dữ liệu)
-    # cuisine = tags.get('cuisine')
-    # if cuisine:
-    #    description_parts.append(f"Món: {cuisine.replace('_', ' ').capitalize()}")
-        
     # - Thêm giờ mở cửa
     opening_hours = tags.get('opening_hours')
     if opening_hours:
@@ -90,11 +86,6 @@ def map_osm_to_app_data(osm_element):
     if phone:
         description_parts.append(f"SĐT: {phone}")
         
-    # - Thêm website
-    # website = tags.get('website') or tags.get('contact:website')
-    # if website:
-    #    description_parts.append("Có website")
-
     # Ghép các phần lại thành mô tả. Nếu không có gì thì tạo mô tả mặc định dựa theo loại
     if description_parts:
         description = " | ".join(description_parts)

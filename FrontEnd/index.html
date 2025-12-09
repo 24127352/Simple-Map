@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,12 +13,12 @@
 
     <div id="restaurant-details" class="details-panel hidden">
         <button id="close-btn">X</button>
-        <img id="res-image" src="" alt="Hình ảnh địa điểm" class="res-image">
         <h2 id="res-name"></h2>
         <p id="res-address"></p>
         <p id="res-description"></p>
-        
-        <button id="find-route-btn" class="route-btn">Tìm đường</button>
+
+        <!-- Nút chỉ đường (thêm) -->
+        <button id="route-btn" class="route-btn">Chỉ đường</button>
     </div>
 
     <div class = "tag-bar">
@@ -45,7 +44,6 @@
     <button id ="traffic-toggle" class ="traffic-btn"> Hiển thị mật độ giao thông </button>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
