@@ -253,3 +253,29 @@ html, body {
         padding: 8px 12px;
     }
 }
+
+
+.route-btn {
+    position: absolute; /* Để căn chỉnh theo khung cha */
+    bottom: 15px;       /* Cách đáy 15px */
+    right: 15px;        /* Cách phải 15px */
+    
+    padding: 8px 16px;
+    background-color: #28a745; /* Màu xanh lá (giống nút Go) */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background 0.3s;
+}
+
+.route-btn:hover {
+    background-color: #218838;
+}
+
+
+.leaflet-routing-container {
+    display: none !important; 
+}
