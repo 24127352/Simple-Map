@@ -31,10 +31,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const markersLayer = L.layerGroup().addTo(map);
 
     const detailsPanel = document.getElementById('restaurant-details');
+    const placeImage = document.getElementById('res-image');
     const placeName = document.getElementById('res-name');
     const placeAddress = document.getElementById('res-address');
     const placeDescription = document.getElementById('res-description');
     const closeBtn = document.getElementById('close-btn');
+    const findRouteBtn = document.getElementById('find-route-btn');
+
+    let currentLocation = null;
+    let userCoords = null;
+    let routingControl = null;
 
     // --- HÀM GỌI API ---
     function fetchLocations(userLat, userLng, radiusInMeters) {
@@ -72,12 +78,14 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderMarkers(type) {
         markersLayer.clearLayers();
         const filteredLocations = locations.filter(location => type === 'all' || location.category === type);
-
+        
         filteredLocations.forEach(location => {
             const iconToUse = getIconByCategory(location.category);
             const marker = L.marker([location.lat, location.lng], { icon: iconToUse });
             
             marker.on('click', () => {
+                currentLocation = location;
+                placeImage.src = location.image || 'https://via.placeholder.com/300x200?text=Không+có+hình+ảnh';
                 placeName.textContent = location.name;
                 // Hiển thị thêm khoảng cách
                 placeAddress.textContent = `Cách bạn: ${location.distance} mét - Đ/c: ${location.address}`;
@@ -124,7 +132,35 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     closeBtn.addEventListener('click', () => detailsPanel.classList.add('hidden'));
-    
+
+    // Xử lý nút tìm đường: hiển thị tuyến trong bản đồ
+    findRouteBtn.addEventListener('click', () => {
+        if (!currentLocation || !userCoords) {
+            alert('Vui lòng chọn một địa điểm và bật vị trí.');
+            return;
+        }
+
+        // Xóa routing cũ nếu có
+        if (routingControl) {
+            map.removeControl(routingControl);
+            routingControl = null;
+        }
+
+        // Tạo tuyến đi từ vị trí người dùng đến địa điểm
+        routingControl = L.Routing.control({
+            waypoints: [
+                L.latLng(userCoords.lat, userCoords.lng),
+                L.latLng(currentLocation.lat, currentLocation.lng)
+            ],
+            routeWhileDragging: false,
+            fitSelectedRoutes: true,
+            showAlternatives: false,
+            createMarker: () => null,
+            lineOptions: {
+                styles: [{ color: '#007bff', opacity: 0.9, weight: 6 }]
+            }
+        }).addTo(map);
+    });
 
     const trafficBtn = document.getElementById('traffic-toggle');
     trafficBtn.addEventListener('click', function() {
@@ -144,6 +180,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
 
+                // Lưu vị trí người dùng
+                userCoords = { lat, lng };
+
                 // Di chuyển map về chỗ người dùng
                 map.setView([lat, lng], 15);
                 L.marker([lat, lng]).addTo(map).bindPopup('Bạn ở đây').openPopup();
@@ -156,6 +195,9 @@ document.addEventListener('DOMContentLoaded', function () {
             (error) => {
                 alert("Bạn cần cho phép vị trí để tìm quán quanh đây. Đang dùng vị trí mặc định tại TP.HCM");
                 // Dùng vị trí mặc định (Quận 1) nếu user chặn
+                userCoords = { lat: 10.7769, lng: 106.7009 };
+                map.setView([10.7769, 106.7009], 13);
+                L.marker([10.7769, 106.7009]).addTo(map).bindPopup('Vị trí mặc định').openPopup();
                 fetchLocations(10.7769, 106.7009, 1000);
             }
         );
