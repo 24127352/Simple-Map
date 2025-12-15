@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     closeBtn.addEventListener('click', () => detailsPanel.classList.add('hidden'));
 
-    // Xử lý nút tìm đường: hiển thị tuyến trong bản đồ
+    // --- Sửa đoạn code xử lý nút tìm đường ---
     findRouteBtn.addEventListener('click', () => {
         if (!currentLocation || !userCoords) {
             alert('Vui lòng chọn một địa điểm và bật vị trí.');
@@ -151,20 +151,31 @@ document.addEventListener('DOMContentLoaded', function () {
             routingControl = null;
         }
 
-        // Tạo tuyến đi từ vị trí người dùng đến địa điểm
+        // Tạo tuyến đường dùng Mapbox (Thay thế OSRM)
+        const mapboxToken = 'pk.eyJ1IjoibWFwcGE0NTciLCJhIjoiY21qNmp0dmZlMjRwZTNwcHp3YWdndXBlZSJ9.euaHg5iSoUTjykwuZKsyxA'; 
+
         routingControl = L.Routing.control({
             waypoints: [
                 L.latLng(userCoords.lat, userCoords.lng),
                 L.latLng(currentLocation.lat, currentLocation.lng)
             ],
+            // Sử dụng router của Mapbox thay vì OSRM
+            router: L.Routing.mapbox(mapboxToken, {
+                profile: 'mapbox/driving' // Có thể đổi thành 'mapbox/walking' hoặc 'mapbox/cycling'
+            }),
             routeWhileDragging: false,
             fitSelectedRoutes: true,
             showAlternatives: false,
-            createMarker: () => null,
+            createMarker: () => null, // Không tạo thêm marker ở điểm A và B (đã có icon rồi)
             lineOptions: {
                 styles: [{ color: '#007bff', opacity: 0.9, weight: 6 }]
             }
-        }).addTo(map);
+        })
+        .on('routingerror', function(e) {
+            console.error("Lỗi tìm đường:", e);
+            alert("Không thể tìm thấy đường đi. Vui lòng kiểm tra lại kết nối hoặc Token.");
+        })
+        .addTo(map);
     });
 
     const trafficBtn = document.getElementById('traffic-toggle');
